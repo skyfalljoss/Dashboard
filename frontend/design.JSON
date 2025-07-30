@@ -1,0 +1,302 @@
+{
+    "designSystem": {
+      "name": "Dark Analytics Dashboard",
+      "version": "1.0",
+      "description": "Modern dark-themed dashboard design system for analytics and data visualization"
+    },
+    
+    "colorPalette": {
+      "background": {
+        "primary": "#1a1a1a",
+        "secondary": "#2a2a2a",
+        "tertiary": "#333333"
+      },
+      "text": {
+        "primary": "#ffffff",
+        "secondary": "#cccccc",
+        "muted": "#999999"
+      },
+      "accent": {
+        "primary": "#4285f4",
+        "secondary": "#6fa8f7",
+        "tertiary": "#a3c4f9"
+      },
+      "status": {
+        "success": "#4caf50",
+        "warning": "#ff9800",
+        "error": "#f44336",
+        "info": "#2196f3"
+      }
+    },
+  
+    "typography": {
+      "fontFamily": "system-ui, -apple-system, sans-serif",
+      "sizes": {
+        "xs": "0.75rem",
+        "sm": "0.875rem",
+        "base": "1rem", 
+        "lg": "1.125rem",
+        "xl": "1.25rem",
+        "2xl": "1.5rem",
+        "3xl": "2rem"
+      },
+      "weights": {
+        "normal": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      }
+    },
+  
+    "spacing": {
+      "xs": "0.25rem",
+      "sm": "0.5rem",
+      "md": "1rem",
+      "lg": "1.5rem",
+      "xl": "2rem",
+      "2xl": "3rem"
+    },
+  
+    "borderRadius": {
+      "sm": "0.25rem",
+      "md": "0.5rem",
+      "lg": "0.75rem",
+      "xl": "1rem"
+    },
+  
+    "components": {
+      "metricCard": {
+        "structure": "Container with metric value, label, trend indicator, and description",
+        "styling": {
+          "background": "background.secondary",
+          "border": "1px solid rgba(255,255,255,0.1)",
+          "borderRadius": "borderRadius.lg",
+          "padding": "spacing.lg",
+          "minHeight": "120px"
+        },
+        "elements": {
+          "value": {
+            "fontSize": "sizes.3xl",
+            "fontWeight": "weights.bold",
+            "color": "text.primary"
+          },
+          "label": {
+            "fontSize": "sizes.sm",
+            "color": "text.secondary",
+            "marginBottom": "spacing.xs"
+          },
+          "trend": {
+            "display": "flex with icon and percentage",
+            "fontSize": "sizes.sm",
+            "color": "Based on positive/negative trend"
+          },
+          "description": {
+            "fontSize": "sizes.xs",
+            "color": "text.muted"
+          }
+        }
+      },
+  
+      "chartContainer": {
+        "structure": "Title, time period, chart area, trend summary",
+        "styling": {
+          "background": "background.secondary",
+          "border": "1px solid rgba(255,255,255,0.1)",
+          "borderRadius": "borderRadius.lg",
+          "padding": "spacing.lg"
+        },
+        "elements": {
+          "title": {
+            "fontSize": "sizes.lg",
+            "fontWeight": "weights.semibold",
+            "color": "text.primary"
+          },
+          "subtitle": {
+            "fontSize": "sizes.sm",
+            "color": "text.muted"
+          },
+          "chart": {
+            "colors": ["accent.primary", "accent.secondary", "accent.tertiary"],
+            "gridLines": "rgba(255,255,255,0.1)",
+            "labels": "text.muted"
+          }
+        }
+      },
+  
+      "dataTable": {
+        "structure": "Header row, data rows with consistent columns",
+        "styling": {
+          "background": "background.primary",
+          "border": "1px solid rgba(255,255,255,0.1)"
+        },
+        "elements": {
+          "header": {
+            "background": "background.tertiary",
+            "fontSize": "sizes.sm",
+            "fontWeight": "weights.medium",
+            "color": "text.secondary",
+            "padding": "spacing.sm spacing.md"
+          },
+          "row": {
+            "borderBottom": "1px solid rgba(255,255,255,0.1)",
+            "padding": "spacing.sm spacing.md",
+            "hover": "background.secondary"
+          },
+          "cell": {
+            "fontSize": "sizes.sm",
+            "color": "text.primary"
+          }
+        }
+      },
+  
+      "navigation": {
+        "structure": "Tab-style navigation with active states",
+        "styling": {
+          "background": "transparent",
+          "borderBottom": "1px solid rgba(255,255,255,0.1)"
+        },
+        "elements": {
+          "tab": {
+            "padding": "spacing.sm spacing.md",
+            "fontSize": "sizes.sm",
+            "color": "text.muted",
+            "border": "none",
+            "background": "transparent"
+          },
+          "activeTab": {
+            "color": "text.primary",
+            "borderBottom": "2px solid accent.primary"
+          }
+        }
+      },
+  
+      "button": {
+        "variants": {
+          "primary": {
+            "background": "accent.primary",
+            "color": "white",
+            "border": "none"
+          },
+          "secondary": {
+            "background": "background.tertiary",
+            "color": "text.primary",
+            "border": "1px solid rgba(255,255,255,0.2)"
+          },
+          "ghost": {
+            "background": "transparent",
+            "color": "text.secondary",
+            "border": "none"
+          }
+        },
+        "styling": {
+          "borderRadius": "borderRadius.sm",
+          "padding": "spacing.sm spacing.md",
+          "fontSize": "sizes.sm",
+          "fontWeight": "weights.medium"
+        }
+      }
+    },
+  
+    "layoutPatterns": {
+      "dashboardGrid": {
+        "description": "4-column responsive grid for metric cards",
+        "structure": "CSS Grid with equal columns",
+        "breakpoints": {
+          "mobile": "1 column",
+          "tablet": "2 columns", 
+          "desktop": "4 columns"
+        },
+        "gap": "spacing.lg"
+      },
+      
+      "chartSection": {
+        "description": "Full-width chart containers below metrics",
+        "structure": "Stacked vertically with consistent spacing",
+        "gap": "spacing.xl"
+      },
+  
+      "dataSection": {
+        "description": "Tabular data with navigation tabs",
+        "structure": "Tab navigation above table content",
+        "gap": "spacing.md"
+      }
+    },
+  
+    "visualElements": {
+      "charts": {
+        "lineChart": {
+          "style": "Smooth curves with gradient fills",
+          "colors": "Blue gradient from accent.primary to accent.tertiary",
+          "background": "Semi-transparent overlay"
+        },
+        "pieChart": {
+          "style": "Donut chart with center text",
+          "colors": "Multiple shades of blue",
+          "centerText": "Large metric value with label"
+        },
+        "barChart": {
+          "style": "Horizontal bars with rounded corners",
+          "colors": "Gradient blue tones",
+          "spacing": "Consistent gaps between bars"
+        }
+      },
+      
+      "trendIndicators": {
+        "positive": {
+          "icon": "upward arrow",
+          "color": "status.success"
+        },
+        "negative": {
+          "icon": "downward arrow", 
+          "color": "status.error"
+        },
+        "neutral": {
+          "icon": "horizontal line",
+          "color": "text.muted"
+        }
+      }
+    },
+  
+    "interactions": {
+      "hover": {
+        "cards": "Subtle background lightening",
+        "buttons": "Background color change",
+        "tableRows": "Background highlight"
+      },
+      "active": {
+        "tabs": "Border bottom accent color",
+        "buttons": "Pressed state with darker background"
+      },
+      "transitions": {
+        "duration": "0.2s",
+        "easing": "ease-in-out"
+      }
+    },
+  
+    "accessibility": {
+      "contrast": "Minimum 4.5:1 ratio for text",
+      "focusStates": "Visible focus rings with accent color",
+      "semanticMarkup": "Proper heading hierarchy and ARIA labels"
+    },
+  
+    "responsive": {
+      "breakpoints": {
+        "mobile": "320px",
+        "tablet": "768px", 
+        "desktop": "1024px",
+        "wide": "1440px"
+      },
+      "behavior": {
+        "mobile": "Single column layout, stacked components",
+        "tablet": "2-column grid for cards, simplified navigation",
+        "desktop": "Full 4-column grid, all features visible"
+      }
+    },
+  
+    "implementation": {
+      "framework": "React with CSS-in-JS or Tailwind CSS",
+      "chartLibrary": "Recharts, Chart.js, or D3.js",
+      "stateManagement": "React hooks for component state",
+      "dataVisualization": "Consistent color mapping across all charts"
+    }
+  }
