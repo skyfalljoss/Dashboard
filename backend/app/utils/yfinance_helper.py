@@ -1,12 +1,22 @@
 import yfinance as yf
 import pandas as pd
+import time
 
+# Cache for stock information
+_stock_info_cache = {}
+CACHE_TIMEOUT_SECONDS = 60
 
 def fetch_stock_info(symbol):
     """
     Fetch real-time stock information using yfinance.
     Returns a dictionary with stock data or None if failed.
     """
+    # Check cache first
+    cached_data = _stock_info_cache.get(symbol)
+    if cached_data and (time.time() - cached_data['timestamp']) < CACHE_TIMEOUT_SECONDS:
+        return cached_data['data']
+
+    
     try:
         ticker = yf.Ticker(symbol)
         info = ticker.info
@@ -28,8 +38,8 @@ def fetch_stock_info(symbol):
         if not current_price:
             print(f"No price data available for {symbol}")
             return None
-            
-        return {
+
+        data = {
             'symbol': symbol.upper(),
             'name': info.get('longName', symbol),
             'current_price': current_price,
@@ -38,6 +48,13 @@ def fetch_stock_info(symbol):
             'currency': info.get('currency', 'USD'),
             'market_cap': info.get('marketCap', 0)
         }
+
+        # Store in cache
+        _stock_info_cache[symbol] = {
+            'data': data,
+            'timestamp': time.time()
+        }
+        return data
     except Exception as e:
         print(f"Error fetching data for {symbol}: {str(e)}")
         return None

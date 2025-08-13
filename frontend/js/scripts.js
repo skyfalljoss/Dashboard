@@ -484,6 +484,7 @@ function populateHoldingsTable() {
       2
     )} (${gainLossPercent}%)
                   </td>
+                  <td>$${holding.prediction}</td>
                   <td>
                       <button class="btn btn-danger" onclick="sellStock('${
                         holding.symbol

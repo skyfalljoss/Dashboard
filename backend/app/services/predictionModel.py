@@ -4,7 +4,7 @@ from keras.models import Sequential, load_model
 from keras.layers import LSTM, Dense, Dropout
 from sklearn.preprocessing import MinMaxScaler
 import yfinance as yf
-from preprocessTrainingData import download_data, preprocess_data
+from .preprocessTrainingData import download_data, preprocess_data
 
 def create_model(input_shape):
     """

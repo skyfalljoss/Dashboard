@@ -2,6 +2,7 @@
 from flask import Blueprint, jsonify, request
 from ..db_init import Holding, db
 from ..utils.yfinance_helper import fetch_stock_info
+from ..services.predictionModel import get_or_train_model, make_prediction 
 
 holdings_bp = Blueprint('holdings', __name__)
 
@@ -34,12 +35,20 @@ def get_holdings():
                     print(f"Could not fetch real-time price for {holding.symbol}. Using stored price.")
                     current_price = holding.stock.current_price
 
+                # Get the prediction for the stock
+                model, scaler = get_or_train_model(holding.symbol)
+                prediction = make_prediction(holding.symbol, model, scaler)
+                print("####################################################################")
+                print(f"Prediction for {holding.symbol}: {prediction}")
+                print("" + "#" * 40)
+
                 holdings_list.append({
                     'symbol': holding.symbol,
                     'name': holding.stock.name,
                     'shares': holding.shares,
                     'avgPrice': holding.avg_price,
-                    'currentPrice': current_price
+                    'currentPrice': current_price,
+                    'prediction': float(prediction) if prediction is not None else None
                 })
 
             except Exception as e:
