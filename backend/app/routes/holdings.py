@@ -1,6 +1,6 @@
 # app/routes/holdings.py
 from flask import Blueprint, jsonify, request
-from ..models import Holding, db
+from ..db_init import Holding, db
 from ..utils.yfinance_helper import fetch_stock_info
 
 holdings_bp = Blueprint('holdings', __name__)

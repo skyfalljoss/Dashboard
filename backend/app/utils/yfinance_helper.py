@@ -1,6 +1,6 @@
 import yfinance as yf
 import pandas as pd
-from flask import jsonify
+
 
 def fetch_stock_info(symbol):
     """

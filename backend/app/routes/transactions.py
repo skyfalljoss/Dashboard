@@ -1,7 +1,7 @@
 # app/routes/transactions.py
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
-from ..models import Stock, Holding, Transaction, db, Portfolio
+from ..db_init import Stock, Holding, Transaction, db, Portfolio
 from datetime import datetime
 from ..utils.yfinance_helper import fetch_stock_info
 
@@ -203,7 +203,9 @@ def add_stock():
 
         db.session.add(transaction_record)
         new_summary = _calculate_live_summary()
+
         portfolio.cash_balance -= transaction_cost
+
         db.session.commit()
         return jsonify({
             'message': message,
@@ -254,17 +256,30 @@ def sell_stock():
             return jsonify({'error': 'Insufficient shares to sell.','':''}), 400
     
         
-        shares_sold = holding_to_sell.shares
+        # shares_sold = holding_to_sell.shares
+
+        stock_info = fetch_stock_info(symbol)
+        if not stock_info:  
+            return jsonify({'error': f'Could not retrieve data for stock symbol {symbol} from the market data provider.'}), 404
+        # Use the current price from the fetched stock info
+        if 'current_price' not in stock_info:   
+            return jsonify({'error': f'Current price is unavailable for stock symbol {symbol} from the market data provider.'}), 404.
+        # Ensure current_price is available
+        if stock_info['current_price'] is None:
+            return jsonify({'error': f'Current price is unavailable for stock symbol {symbol} from the market data provider.'}), 404
+        # Use the current price for the transaction
+        holding_to_sell.stock.current_price = stock_info['current_price']
         transaction_price = holding_to_sell.stock.current_price # Use current price for transaction
+
         transaction_cost = shares_to_sell * transaction_price
 
         # 2. Record the transaction *before* deleting the holding
         transaction_record = Transaction(
             symbol=symbol,
             transaction_type='SELL',
-            shares=shares_sold,
+            shares=shares_to_sell,
             price=transaction_price,
-            amount=shares_sold * transaction_price,
+            amount=shares_to_sell * transaction_price,
             txn_date=datetime.utcnow()
         )
 

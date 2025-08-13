@@ -10,3 +10,6 @@ seaborn==0.13.2
 plotly==5.19.0
 yfinance==0.2.30
 pandas-datareader==0.10.0
+yfinance
+scikit-learn
+tensorflow

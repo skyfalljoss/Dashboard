@@ -1,6 +1,6 @@
 # app/routes/allocation.py
 from flask import Blueprint, jsonify
-from ..models import Holding, db
+from ..db_init import Holding, db
 
 allocation_bp = Blueprint('allocation', __name__)
 

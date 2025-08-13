@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from app.models import db, Stock, Holding, Portfolio
-from app.services import get_portfolio_performance, get_portfolio_allocation
+from app.db_init import db, Stock, Holding, Portfolio
+from app.services.portfolioPerformance import get_portfolio_performance, get_portfolio_allocation
 from ..utils.yfinance_helper import fetch_stock_info
 
 # A Blueprint is Flask's way of organizing a group of related routes.
