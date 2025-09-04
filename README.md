@@ -64,4 +64,57 @@ A real-time portfolio management dashboard that displays stock data from yfinanc
 - `GET /api/holdings`: Get current portfolio holdings
 - `GET /api/holdings/realtime?symbols=<symbols>`: Get real-time price data
 - `POST /api/stock/add`: Add stocks to portfolio
-- `POST /api/stock/sell`: Sell stocks from portfolio 
+- `POST /api/stock/sell`: Sell stocks from portfolio
+
+---
+
+## Getting Started
+
+To get the project up and running on your local machine, follow these simple steps.
+
+### Prerequisites
+
+-   Python 3.x
+-   `pip` for installing Python packages
+
+### Backend Setup
+
+1.  **Navigate to the backend directory**:
+    ```bash
+    cd backend
+    ```
+
+2.  **Create and activate a virtual environment**:
+    -   On macOS and Linux:
+        ```bash
+        python3 -m venv venv
+        source venv/bin/activate
+        ```
+    -   On Windows:
+        ```bash
+        python -m venv venv
+        .\venv\Scripts\activate
+        ```
+
+3.  **Install the required packages**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Run the Flask application**:
+    ```bash
+    python app.py
+    ```
+    The backend server will start on `http://localhost:5001`.
+
+### Frontend Setup
+
+1.  **Navigate to the frontend directory**:
+    ```bash
+    cd frontend
+    ```
+
+2.  **Open `index.html` in your web browser**:
+    You can do this by double-clicking the file or by right-clicking and selecting "Open with" your preferred browser.
+
+
