@@ -22,8 +22,6 @@ def create_app():
     from .routes.holdings import holdings_bp
     from .routes.search import search_bp
     from .routes.transactions import transactions_bp
-    from .routes.predict import predict_bp
-
     # Register each blueprint with a URL prefix.
     app.register_blueprint(main_blueprint, url_prefix='/api')
     app.register_blueprint(holdings_bp, url_prefix='/api')
@@ -31,6 +29,5 @@ def create_app():
     app.register_blueprint(transactions_bp, url_prefix='/api')
     app.register_blueprint(performance_bp, url_prefix='/api')
     app.register_blueprint(allocation_bp, url_prefix='/api')
-    app.register_blueprint(predict_bp, url_prefix='/api')
 
     return app

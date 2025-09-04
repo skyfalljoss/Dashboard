@@ -1,13 +1,30 @@
 import numpy as np
 import pandas as pd
 import yfinance as yf
+import time
+import random
 from sklearn.preprocessing import MinMaxScaler
 
 def download_data(ticker):
     """
-    Downloads historical stock data from Yahoo Finance.
+    Downloads historical stock data from Yahoo Finance with rate limiting.
     """
-    return yf.download(ticker, start='2015-01-01', end=pd.to_datetime('today').strftime('%Y-%m-%d'))
+    try:
+        # Add a delay to prevent rate limiting
+        time.sleep(random.uniform(1, 3))
+        return yf.download(ticker, start='2015-01-01', end=pd.to_datetime('today').strftime('%Y-%m-%d'), progress=False)
+    except Exception as e:
+        print(f"Error downloading data for {ticker}: {e}")
+        # If rate limited, wait longer and retry once
+        if '429' in str(e):
+            print(f"Rate limited for {ticker}, waiting 10 seconds before retry...")
+            time.sleep(10)
+            try:
+                return yf.download(ticker, start='2015-01-01', end=pd.to_datetime('today').strftime('%Y-%m-%d'), progress=False)
+            except Exception as retry_e:
+                print(f"Retry failed for {ticker}: {retry_e}")
+                return None
+        return None
 
 def preprocess_data(data):
     """

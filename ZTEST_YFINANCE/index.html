@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YFinance API Tester</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        input[type="text"] { padding: 10px; width: 200px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .error { color: #d32f2f; margin-top: 10px; padding: 10px; background-color: #ffebee; border-radius: 4px; }
+        .stock-info { margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+        .stock-info h2 { margin-top: 0; color: #333; }
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .info-item { margin-bottom: 5px; }
+        .info-label { font-weight: bold; color: #555; }
+        .history { margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .api-test { margin-top: 30px; padding: 15px; background-color: #e8f5e9; border-radius: 5px; }
+        .api-test h3 { margin-top: 0; }
+        .api-result { margin-top: 10px; padding: 10px; background-color: #f1f8e9; border-radius: 4px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YFinance API Tester</h1>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="ticker">Enter Stock Ticker:</label>
+                <input type="text" id="ticker" name="ticker" required value="{{ ticker or '' }}" placeholder="e.g., AAPL">
+                <button type="submit">Get Data</button>
+            </div>
+        </form>
+        
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        {% if stock_data %}
+        <div class="stock-info">
+            <h2>{{ stock_data.name }} ({{ stock_data.symbol }})</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Current Price:</span> 
+                    ${{ "%.2f"|format(stock_data.current_price) if stock_data.current_price != 'N/A' else 'N/A' }}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Previous Close:</span> 
+                    ${{ "%.2f"|format(stock_data.previous_close) if stock_data.previous_close != 'N/A' else 'N/A' }}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Open:</span> 
+                    ${{ "%.2f"|format(stock_data.open) if stock_data.open != 'N/A' else 'N/A' }}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Day Range:</span> 
+                    {{ stock_data.day_range }}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Volume:</span> 
+                    {{ "{:,}".format(stock_data.volume) if stock_data.volume != 'N/A' else 'N/A' }}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Market Cap:</span> 
+                    ${{ "{:,}".format(stock_data.market_cap) if stock_data.market_cap != 'N/A' else 'N/A' }}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">P/E Ratio:</span> 
+                    {{ "%.2f"|format(stock_data.pe_ratio) if stock_data.pe_ratio != 'N/A' else 'N/A' }}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Dividend Yield:</span> 
+                    {{ "%.2f"|format(stock_data.dividend_yield * 100) if stock_data.dividend_yield != 'N/A' else 'N/A' }}%
+                </div>
+            </div>
+            
+            <div class="history">
+                <h3>Historical Data (Last 7 Days)</h3>
+                <table>
+                    <tr>
+                        <th>Date</th>
+                        <th>Close Price</th>
+                        <th>Volume</th>
+                    </tr>
+                    {% for day in stock_data.history %}
+                    <tr>
+                        <td>{{ day['Date'].strftime('%Y-%m-%d') }}</td>
+                        <td>${{ "%.2f"|format(day['Close']) }}</td>
+                        <td>{{ "{:,}".format(day['Volume']) }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="api-test">
+            <h3>API Test</h3>
+            <p>Test the API endpoint directly: <code>/api/&lt;ticker&gt;</code></p>
+            <div class="form-group">
+                <input type="text" id="api-ticker" placeholder="e.g., MSFT">
+                <button onclick="testApi()">Test API</button>
+            </div>
+            <div id="api-result" class="api-result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function testApi() {
+            const ticker = document.getElementById('api-ticker').value.trim();
+            if (!ticker) {
+                alert('Please enter a ticker symbol');
+                return;
+            }
+            
+            fetch(`/api/${ticker}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('api-result');
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `<strong>API Response:</strong><br>${JSON.stringify(data, null, 2)}`;
+                })
+                .catch(error => {
+                    const resultDiv = document.getElementById('api-result');
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `<strong>Error:</strong><br>${error.message}`;
+                });
+        }
+    </script>
+</body>
+</html>

@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from flask import jsonify
 from app.db_init import db, Stock, Holding, Transaction, Portfolio
+from app.utils.yfinance_helper import fetch_historical_data
 
 def get_portfolio_performance():   
     """
@@ -40,7 +41,11 @@ def get_portfolio_performance():
         initial_cash = cash_at_period_start
         print(f"Cash at period start ({start_date.date()}): {initial_cash}")
 
-        hist_data = yf.download(symbols, start=start_date, end=end_date)['Close']
+        # Use the rate-limited helper function instead of direct yf.download
+        hist_data = fetch_historical_data(symbols, period='1y')
+        if hist_data is None:
+            return jsonify({'labels': [], 'values': []})
+            
         if isinstance(hist_data, pd.Series):
             hist_data = hist_data.to_frame(name=symbols[0])
 
@@ -66,6 +71,7 @@ def get_portfolio_performance():
                 if shares > 0 and symbol in hist_data.columns:
                     try:
                         price_on_date = hist_data.loc[hist_data.index.asof(date), symbol]
+                        print(f'  {symbol}: {shares} shares at {price_on_date} each')
                         if pd.notna(price_on_date):
                             total_value += shares * price_on_date
                             print(f'  {symbol}: {shares} shares at {price_on_date} each, Total: {shares * price_on_date}')
@@ -134,28 +140,56 @@ def seed_database_with_data():
     
     print("Fetching live stock data from Yahoo Finance...")
     
-    for symbol in symbols:
-        time.sleep(0.5) 
-        try:
-            ticker = yf.Ticker(symbol)
-            info = ticker.info
-            current_price = info.get('currentPrice') or info.get('regularMarketPrice')
-            prev_close = info.get('previousClose')
-            
-            if current_price and prev_close:
-                change = ((current_price - prev_close) / prev_close) * 100
-                stock = Stock(
-                    symbol=symbol,
-                    name=info.get('longName', symbol),
-                    current_price=current_price,
-                    change_percent=change
-                )
-                db.session.add(stock)
-                print(f"Successfully fetched data for {symbol}")
-            else:
-                print(f"Could not retrieve complete pricing data for {symbol}")
-        except Exception as e:
-            print(f"An error occurred fetching data for {symbol}: {e}")
+    # Use batch download with proper delays instead of individual calls
+    try:
+        # Download all symbols at once with a single API call
+        hist_data = yf.download(symbols, period="1d", progress=False)
+        if not hist_data.empty:
+            for symbol in symbols:
+                try:
+                    if symbol in hist_data['Close'].columns:
+                        current_price = hist_data['Close'][symbol].iloc[-1]
+                        prev_close = hist_data['Close'][symbol].iloc[-1]  # Same as current for 1d period
+                        
+                        if current_price and prev_close:
+                            change = 0  # No change for 1-day period
+                            stock = Stock(
+                                symbol=symbol,
+                                name=symbol,  # Will be updated later if needed
+                                current_price=current_price,
+                                change_percent=change
+                            )
+                            db.session.add(stock)
+                            print(f"Successfully fetched data for {symbol}")
+                        else:
+                            print(f"Could not retrieve complete pricing data for {symbol}")
+                except Exception as e:
+                    print(f"An error occurred processing data for {symbol}: {e}")
+    except Exception as e:
+        print(f"Error in batch download: {e}")
+        # Fallback to individual calls with longer delays
+        for symbol in symbols:
+            time.sleep(2)  # Increased delay to 2 seconds
+            try:
+                ticker = yf.Ticker(symbol)
+                info = ticker.info
+                current_price = info.get('currentPrice') or info.get('regularMarketPrice')
+                prev_close = info.get('previousClose')
+                
+                if current_price and prev_close:
+                    change = ((current_price - prev_close) / prev_close) * 100
+                    stock = Stock(
+                        symbol=symbol,
+                        name=info.get('longName', symbol),
+                        current_price=current_price,
+                        change_percent=change
+                    )
+                    db.session.add(stock)
+                    print(f"Successfully fetched data for {symbol}")
+                else:
+                    print(f"Could not retrieve complete pricing data for {symbol}")
+            except Exception as e:
+                print(f"An error occurred fetching data for {symbol}: {e}")
 
     holdings_data = [
         {'symbol': 'AAPL', 'shares': 50, 'avgPrice': 150.00},

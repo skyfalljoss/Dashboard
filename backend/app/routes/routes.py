@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app.db_init import db, Stock, Holding, Portfolio
 from app.services.portfolioPerformance import get_portfolio_performance, get_portfolio_allocation
-from ..utils.yfinance_helper import fetch_stock_info
+from ..utils.yfinance_helper import fetch_stock_info, fetch_historical_data, get_api_status, reset_api_status
 
 # A Blueprint is Flask's way of organizing a group of related routes.
 main = Blueprint('main', __name__)
@@ -46,35 +46,50 @@ def _calculate_live_summary():
 # --- Dashboard Read-Only Endpoints ---
 
 @main.route('/summary', methods=['GET'])
-def get_summary():
-    """
-    Calculates and returns the main portfolio summary metrics using
-    real-time prices for all holdings.
-    """
+def summary():
+    """Calculates and returns the current portfolio summary."""
     try:
         portfolio = Portfolio.query.first()
         if not portfolio:
-            # If no portfolio exists, create a default one.
-            portfolio = Portfolio(cash_balance=100000) # Default starting cash
-            db.session.add(portfolio)
-            db.session.commit()
-            # Re-query to get the object in the session correctly
-            portfolio = Portfolio.query.first()
+            return jsonify({"error": "No portfolio found."}), 404
 
         holdings = Holding.query.all()
+        if not holdings:
+            return jsonify({
+                'totalPortfolioValue': portfolio.cash_balance,
+                'totalGainLoss': 0,
+                'cashBalance': portfolio.cash_balance,
+                'totalHoldings': 0
+            })
+
+        # Get all symbols for batch processing
+        symbols = [h.symbol for h in holdings if h.stock]
         
+        # Fetch all prices in a single batch call instead of individual calls
+        realtime_prices = {}
+        try:
+            if symbols:
+                # Use batch download to get all prices at once
+                data = fetch_historical_data(symbols, period="1d")
+                if data is not None and not data.empty:
+                    for symbol in symbols:
+                        if symbol in data.columns:
+                            realtime_prices[symbol] = data[symbol].iloc[-1]
+        except Exception as e:
+            print(f"Error fetching batch prices for summary: {e}")
+            # Continue with stored prices if batch fetch fails
+
         total_stock_value = 0
         total_cost_basis = 0
-        
+
         for holding in holdings:
             # Ensure the holding has a valid stock relationship
             if not holding.stock:
                 continue
 
-            # Fetch real-time price for each holding to ensure accuracy
+            # Use real-time price if available, otherwise fall back to stored price
             try:
-                info = fetch_stock_info(holding.symbol)
-                current_price = info.get('current_price', holding.stock.current_price)
+                current_price = realtime_prices.get(holding.symbol, holding.stock.current_price)
             except Exception:
                 # If yfinance fails for a symbol, fall back to the last stored price
                 current_price = holding.stock.current_price
@@ -188,4 +203,25 @@ def delete_holding(holding_id):
     db.session.delete(holding)
     db.session.commit()
     return jsonify({'message': f'Successfully deleted holding for {symbol}.'})
+
+@main.route('/status', methods=['GET'])
+def api_status():
+    """Get the current status of the API rate limiting and Yahoo Finance health"""
+    return jsonify(get_api_status())
+
+@main.route('/status/reset', methods=['POST'])
+def reset_api_status():
+    """Manually reset the API status and clear cache"""
+    reset_api_status()
+    return jsonify({'message': 'API status reset successfully'})
+
+@main.route('/test-yahoo', methods=['GET'])
+def test_yahoo():
+    """Test Yahoo Finance connectivity"""
+    from ..utils.yfinance_helper import check_yahoo_health
+    is_healthy = check_yahoo_health()
+    return jsonify({
+        'yahoo_finance_working': is_healthy,
+        'message': 'Yahoo Finance is working' if is_healthy else 'Yahoo Finance is not responding'
+    })
 

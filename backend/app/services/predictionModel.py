@@ -41,14 +41,15 @@ def get_or_train_model(ticker):
         
     return model, scaler
 
-def make_prediction(ticker, model, scaler):
+def make_prediction( model, scaler, historical_data):
     """
     Makes a prediction for the next day's closing price.
     """
     # Get the last 60 days of closing price data
-    data = yf.download(ticker, period="2mo")
-    data = data.filter(['Close'])
-    last_60_days = data[-60:].values
+    # data = yf.download(ticker, period="2mo")
+    # data = data.filter(['Close'])
+    # last_60_days = data[-60:].values
+    last_60_days = historical_data.filter(['Close'])[-60:].values
     last_60_days_scaled = scaler.transform(last_60_days)
     
     # Create a data structure for prediction

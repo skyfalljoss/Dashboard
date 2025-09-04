@@ -34,7 +34,7 @@ async function initializeApp() {
   setupEventListeners();
   await loadAllData(); // Fetch all data from backend and update the UI
   populateSearchTableWithHoldings();
-  startRealTimeUpdates(); // Start real-time updates
+  // startRealTimeUpdates(); // Start real-time updates
 }
 
 function setupEventListeners() {
@@ -49,10 +49,10 @@ function startRealTimeUpdates() {
     clearInterval(realTimeUpdateInterval);
   }
 
-  // Update every 30 seconds for real-time feel
+  // Update every 5 minutes to avoid rate limiting
   realTimeUpdateInterval = setInterval(async () => {
     await updateRealTimeData();
-  }, 60000);
+  }, 300000); // 5 minutes in milliseconds
 }
 
 // Update real-time data (prices, changes, etc.)
@@ -484,7 +484,6 @@ function populateHoldingsTable() {
       2
     )} (${gainLossPercent}%)
                   </td>
-                  <td>$${holding.prediction}</td>
                   <td>
                       <button class="btn btn-danger" onclick="sellStock('${
                         holding.symbol

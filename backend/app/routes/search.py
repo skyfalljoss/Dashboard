@@ -1,8 +1,9 @@
 # Dashboard/backend/app/routes/search.py
 from flask import Blueprint, jsonify, request
-from ..utils.yfinance_helper import fetch_stock_info
+from ..utils.yfinance_helper import fetch_stock_info, fetch_historical_data
 from ..db_init import Holding
-import requests
+import yfinance as yf
+import pandas as pd
 
 ALPHA_VANTAGE_API_KEY = 'HWWZLX4BAWS7ID80'
 # 5D620U1VSLBYFJV3
@@ -29,24 +30,45 @@ def get_user_holdings():
     Returns the user's current holdings with live data from yfinance.
     """
     holdings = Holding.query.all()
-    holdings_results = []
-    for holding in holdings:
-        try:
-            stock_info = fetch_stock_info(holding.symbol)
-            if stock_info and stock_info.get('current_price') is not None:
-                change_percent = stock_info.get('change_percent', 0)
-                change_str = f"+{change_percent:.2f}%" if change_percent >= 0 else f"{change_percent:.2f}%"
+    if not holdings:
+        return jsonify([])
 
-                holdings_results.append({
-                    'symbol': holding.symbol,
-                    'name': stock_info.get('name', holding.symbol),
-                    'price': stock_info['current_price'],
-                    'change': change_str
-                })
-        except Exception as e:
-            print(f"Error fetching data for {holding.symbol}: {e}")
-            continue
-    return jsonify(holdings_results)
+    symbols = [holding.symbol for holding in holdings]
+    
+    try:
+        # Use the rate-limited helper function instead of direct yf.download
+        data = fetch_historical_data(symbols, period="2d")
+        if data is None or data.empty:
+            return jsonify([])
+
+        holdings_results = []
+        for holding in holdings:
+            try:
+                symbol = holding.symbol
+                if symbol in data.columns:
+                    current_price = data[symbol].iloc[-1]
+                    prev_close = data[symbol].iloc[-2] if len(data) > 1 else current_price
+                    
+                    if prev_close != 0:
+                        change_percent = ((current_price - prev_close) / prev_close) * 100
+                        change_str = f"+{change_percent:.2f}%" if change_percent >= 0 else f"{change_percent:.2f}%"
+                    else:
+                        change_str = "0.00%"
+
+                    holdings_results.append({
+                        'symbol': symbol,
+                        'name': holding.stock.name if holding.stock else symbol,
+                        'price': current_price,
+                        'change': change_str
+                    })
+            except Exception as e:
+                print(f"Error processing data for {holding.symbol}: {e}")
+                continue
+                
+        return jsonify(holdings_results)
+    except Exception as e:
+        print(f"Error fetching batch data: {e}")
+        return jsonify([])
 
 def search_with_yfinance(query):
     """
