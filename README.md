@@ -115,6 +115,11 @@ To get the project up and running on your local machine, follow these simple ste
     ```
 
 2.  **Open `index.html` in your web browser**:
-    You can do this by double-clicking the file or by right-clicking and selecting "Open with" your preferred browser.
+    You can do this by double-clicking the file or by right-clicking and selecting "Open with" your preferred browser.>
+
+### Demo
+<img width="975" height="477" alt="image" src="https://github.com/user-attachments/assets/182298b4-b575-4865-b8df-eafb8493877f" />
+<img width="975" height="489" alt="image" src="https://github.com/user-attachments/assets/68d360df-f553-4dfc-be8c-5df56028b46f" />
+
 
 
